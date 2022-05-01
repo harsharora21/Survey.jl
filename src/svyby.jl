@@ -1,7 +1,13 @@
-svymean = mean
-svyquantile = quantile
-svysum = wsum
+function svymean(x, y)
+     return DataFrame(Mean = mean(x, y), standard_error = sem(y; mean = mean(x, y)))
+end
+function svyquantile(x, y, q)
+     return DataFrame(quantile = quantile(x, y, q)) 
+end
 
+function svytotal(x, y) 
+    return DataFrame(sum = wsum(x, y))
+end
 """
 ```julia
 svyby(formula::Symbol, design::svydesign, func::Function, params = [])
@@ -62,7 +68,7 @@ julia> svyby(:api00, :cname, dclus1, svymean)
 function svyby(formula::Symbol, by::Symbol, design::svydesign, func::Function, params = [])
     gdf = groupby(design.data, by)
     w = design.weights
-    return combine(gdf, [formula, w] => ((x, y) -> func(x, weights(y), params...)) => formula)
+    return combine(gdf, [formula, w] => ((x, y) -> func(x, weights(y), params...)) => AsTable)
 end
 
 
